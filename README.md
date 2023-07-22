@@ -38,6 +38,8 @@ The data is alternately hosted in Ecological Archives E090-028-S1 (DOI: 10.1890/
 library(phylolm)
 # Load example data
 data(shorebird)
+shorebird <- comparative.data(shorebird.tree, shorebird.data, Species, vcv=TRUE, vcv.dim=3)
+
 # Create list of models corresponding to SEM
 modelList <- list(
   phylolm (log(Egg.Mass) ~ log(M.Mass)+log(F.Mass)+log(Cl.size), data=shorebird$data,phy=shorebird$phy, model='lambda'),
