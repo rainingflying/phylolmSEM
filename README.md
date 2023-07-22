@@ -1,4 +1,4 @@
-# Piecewise Structural Equation Modeling
+# Phynegetic piecewise Structural Equation Modeling
 
   Implementation of phygenetic piecewise structural equation modeling (SEM) in R, including estimation of path coefficients and goodness-of-fit statistics. 
   
