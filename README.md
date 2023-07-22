@@ -28,12 +28,13 @@ Supported model classes include:
 # install_github("rainingflying/phylolmSEM")
 
 library(phylolmSEM)
+library(caper)
 ```
 
 ###Load data from Shipley 2009
 
 ```
-data(shipley2009)
+data(shorebird)
 ```
 The data is alternately hosted in Ecological Archives E090-028-S1 (DOI: 10.1890/08-1034.1).
 
@@ -49,7 +50,7 @@ Models are constructed using a mix of the `nlme` and `lmerTest` packages, as in 
 ```
 # Load required libraries for phylogenetic generalized least squares
 library(phylolm)
-library(caper)
+
 
 
 # Load example data
