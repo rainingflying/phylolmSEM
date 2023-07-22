@@ -25,9 +25,9 @@ Supported model classes include:
 ```
 # Install dev version from GitHub
 # library(devtools)
-# install_github("jslefche/piecewiseSEM")
+# install_github("rainingflying/phylolmSEM")
 
-library(piecewiseSEM)
+library(phylolmSEM)
 ```
 
 ###Load data from Shipley 2009
@@ -49,6 +49,7 @@ Models are constructed using a mix of the `nlme` and `lmerTest` packages, as in 
 ```
 # Load required libraries for phylogenetic generalized least squares
 library(phylolm)
+library(caper)
 
 
 # Load example data
