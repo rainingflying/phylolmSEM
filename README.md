@@ -30,39 +30,20 @@ Supported model classes include:
 library(phylolmSEM)
 library(caper)
 ```
-
-###Load data from Shipley 2009
-
-```
-data(shorebird)
-```
 The data is alternately hosted in Ecological Archives E090-028-S1 (DOI: 10.1890/08-1034.1).
 
 ###Create model set
-
-
-The model corresponds to the following hypothesis (Fig. 2, Shipley 2009);
-
-![Shipley 2009 Fig. 2](https://raw.githubusercontent.com/jslefche/jslefche.github.io/master/img/shipley_2009.jpg)
-
-Models are constructed using a mix of the `nlme` and `lmerTest` packages, as in the supplements of Shipley 2009. 
-
 ```
 # Load required libraries for phylogenetic generalized least squares
 library(phylolm)
-
-
-
 # Load example data
-data(shipley2009)
-
+data(shorebird)
 # Create list of models corresponding to SEM
 modelList <- list(
   phylolm (log(Egg.Mass) ~ log(M.Mass)+log(F.Mass)+log(Cl.size), data=shorebird$data,phy=shorebird$phy, model='lambda'),
   phylolm(log(F.Mass) ~ log(M.Mass), data=shorebird$data,phy=shorebird$phy, model='lambda')
 )
 ```
-
 ###Run Shipley tests
 
 `sem.fit` returns a list of the following:
