@@ -1,0 +1,15 @@
+Package: phylolmSEM
+Type: Package
+Title: Phylogenetic piecewise Structural Equation Modeling
+Version: 0.1.0
+Author: Wuchao Gao
+Maintainer: Wuchao Gao <sichuangwc@gmail.com>
+Description: Implements phylogenetic piecewise structural equation models
+License: PL (>= 2)
+Encoding: UTF-8
+Imports: lavaan, lme4, methods, nlme, pbkrtest, phylolm
+NeedsCompilation: no
+Packaged: 2023-07-22 08:38:37 UTC; gao
+Repository: github
+Date/Publication:
+RoxygenNote: 7.2.3

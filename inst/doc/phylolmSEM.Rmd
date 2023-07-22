@@ -1,0 +1,127 @@
+---
+title: "phylolmSEM"
+author: "Wuchao gao"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{piecewiseSEM}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+The `piecewiseSEM` package implements piecewise structural equation modeling (SEM) for the R statistical language. SEM is useful for simultaneously testing complex multivariate hypotheses, and a piecewise approach (i.e., local estimation) is a flexible variant that allows for the fitting of various model forms and specifications. 
+
+Users are able to construct a list of structured equations corresponding to a single caustal network using the most common linear modeling functions, including: `lm`, `rq`, `glm`, `glm.nb`, `gls`, `phylolm`, `merMod`, `merModLmerTest`, `lme`, `glmmPQL`, and `glmmadmb`. 
+
+I provide functions to evaluate (`sem.fit`, `sem.model.fits`), solve (`sem.coefs`), and visualize (`partial.resid`) the output. I also provide a way for users to translate their network to a traditional variance-covariance based SEM as implemented in the `lavaan` package (`sem.lavaan`).
+
+In this vignette, I provide a worked example, all the way from constructing the model to conducting tests of directed separation and interpreting the results.
+
+##Example: Shipley (2009)
+
+The following example comes from Shipley (2009)^[Shipley, B. (2009). Confirmatory path analysis in a generalized multilevel context. Ecology, 90(2), 363-368.]. The hypothetical data represent a study conducted beginning in 1970 across 20 sites differing in latitude (`lat`). Five individual trees are measured each year until 2006 (or until the tree dies). At each site in each year and for each individual, the following variables are measured: the cumulative degree days until bud break (`Date`), the Julian date of bud break (`DD`),  the increase in stem diameter per tree (`Growth`) and a binary variable indicating the survival (`1`) or death (`0`) in the subsequent growing season (`Live`).
+
+This dataset incorporates hierarchical observations (individual within site within year) and non-independence (repeated measures), and therefore violates some of the basic assumptions of traditional linear modeling and variance-covariance SEM, making it a perfect candidate for a piecewise approach.
+
+The hypothesized casual structure of the network is specified by Shipley as:
+![Shipley 2009 Fig. 2](https://raw.githubusercontent.com/jslefche/jslefche.github.io/master/img/shipley_2009.jpg)
+and will be the structure we will evaluate in this example.
+
+###Load package
+
+#```{r, message = FALSE, results = "hide"}
+# library(devtools)
+# install_github("jslefche/piecewiseSEM")
+library(phylolm)
+#```
+
+###Load data from Shipley 2009
+
+```{r}
+data(shipley2009)
+```
+The data is alternately hosted in Ecological Archives E090-028-S1 (DOI: 10.1890/08-1034.1).
+
+###Create model set
+
+We construct models corresponding to the path diagram above using a mix of the `nlme` and `lmerTest` packages, as in the supplements of Shipley (2009), and then stored in a list. `glmer` is used to specify a binomial distribution for survival (0 or 1). The random structure includes each observation (tree) within each site. 
+
+In each model, the response is set by the variable into which the arrow is pointing, and the predictor(s) by the variable(s) out of which the arrow(s) are originating.
+
+This particular model specification ignores the temporal autocorrelation among years, but this could easily be incorporated as well, either in the random structure or by specifying a preset correlation structure using, for example, `corAR1` or `corCAR1` in the `nlme` package.
+
+```{r, message = FALSE, results = "hide"}
+# Load required libraries for linear mixed effects models
+library(lme4)
+library(nlme)
+
+# Load example data from package
+data(shipley2009)
+
+# Create list of models corresponding to SEM
+modelList <- list(
+  phylolm (log(Egg.Mass) ~ log(M.Mass)+log(F.Mass)+log(Cl.size), data=shorebird$data,phy=shorebird$phy, model='lambda'),
+  phylolm(log(F.Mass) ~ log(M.Mass), data=shorebird$data,phy=shorebird$phy, model='lambda')
+)
+modelList
+
+sem.fit(modelList, shorebird)
+sem.coefs(modelList)
+sem.model.fits(modelList)
+rsquared(modelList)
+```
+
+###Evaluate model fit
+
+To evaluate the fit of the SEM, we must conduct tests of _directed separation_. These tests essentially summarize the significance of directed relationships (unidirectional arrows in the diagram above) that could theoretically have been included in the hypothesized causal network, but which were deemed causally unimportant. In other words, are relationships left out of the causal network significant?
+
+These tests involve fitting those missing relationships and using the resulting significance values to construct a Fisher's C statistic. This statistic can be compared to a X[2] distribution to assess whether the proposed causal structure represents the data, or instead whether those missing paths are causally important.
+
+The Fisher's C statistic can be also be used to construct a value of Akaike's Information Criterion (AIC), to aid in the comparison of alternate structures fit to the same data.
+
+We conduct  the d-sep tests, and obtain the Fisher's C and AIC scores, using the function `sem.fit` which returns a list of the following:
+
+(1) the missing paths (omitting conditional variables), the estimate, standard error, degrees of freedom, and associated p-values;
+(2) the Fisher's C statistic, degrees of freedom, and p-value for the model (derived from a Chi-squared distribution);
+(3) the AIC, AICc (corrected for small sample size), the likelihood degrees of freedom, and the model degrees of freedom.
+
+The argument `add.vars` allows you to specify a vector of additional variables whose causal independence you also wish to test. This is useful if you are comparing nested models. Default is `NULL`.
+
+The argument `adjust.p` allows you to adjust the p-values returned by the function based on the the total degrees of freedom for the model (see supplementary material, Shipley 2013^[Shipley, B. (2013). The AIC model selection method applied to path analytic models compared using a d-separation test. Ecology, 94(3), 560-564.]). Default is `FALSE` (uses the degrees of freedom reported in the summary table).
+
+(See [p-values and all that](http://stat.ethz.ch/pipermail/r-help/2006-May/094765.html) for a discussion of p-values from mixed models using the `lmer` package.)
+
+```{r}
+sem.fit(modelList, shorebird)
+```
+
+In this case the model reproduces the data well (_P_ = 0.484), and we reject the null that the model does not reproduce the data. The potential missing paths, including any conditional covariates, all have _P_-values exceeding 0.05, implying that they are not necessary to interpret the supposed causal structure of this dataset.
+
+A complementary method of assessing fit is to explore the fits of the individual component models (i.e., the structured equations). This can be done by obtaining the standard coefficient of determination (R[2]) for each model. In the case of non-normal and mixed models, the R[2] is calculated as a pseudo-R[2]. More details can be found in the package documentation.
+```{r}
+sem.model.fits(modelList)
+```
+
+In this case, the R[2] of the fixed effects only (marginal) ranges from 0.11 - 0.56, which is not terrible for ecological data. Acknowledging the random variation (conditional) yields improved values of R[2] ranging from 0.62 - 0.98, implying that a large amount of variance explained can be attributed to variation among individuals and sites and not the fixed effects.
+
+###Extract path coefficients
+
+Path coefficients can be either unstandardized (`standardize = 'none'`, the default) or standardized (centered and scaled in units of standard deviation of the mean, `standardize = 'scale'`, or scaled by the range the data, `standardize = 'range'`). The function returns a `data.frame` sorted by each variable and increasing significance.
+
+```{r}
+(coef.table = sem.coefs(modelList))
+```
+
+Here we see that all relationships are significant, and that increasing latitude delays bud break. However, the later date of bud break actually enhances growth, and ultimately survival. So the interpretation of this example is that increasing latitude increases survival.
+
+We can quantify the degree to which latitude indirectly enhances survival by multiplying the path coefficients:
+
+```{r}
+prod(coef.table$estimate)
+```
+
+We can also look at the relative magnitude of the effects by scaling by mean and variance to put all coefficient estimates in units of standard deviations of the mean:
+
+
+```{r}
+sem.coefs(modelList, standardize = "scale")
+```
