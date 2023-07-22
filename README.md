@@ -75,8 +75,11 @@ The argument `adjust.p` allows you to adjust the p-values returned by the functi
 
 
 ```
+# Get goodness-of-fit and AIC
 sem.fit(modelList, shorebird)
+# Extract path coefficients
 sem.coefs(modelList)
+#Extract R square
 sem.model.fits(modelList)
-rsquared(modelList)
+
 ```
