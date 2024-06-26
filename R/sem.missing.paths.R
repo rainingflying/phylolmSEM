@@ -167,7 +167,7 @@ sem.missing.paths = function(
     # Add df if summary table does not return
     if(length(ret) != 5 & any(class(basis.mod.new) %in% c("lm", "glm", "negbin", "pgls","phylolm"))) 
       
-      ret = cbind(ret[1:2], summary(basis.mod.new)$df, ret[3:4]) else
+      ret = cbind(ret[1:2], data$data[,1]-summary(basis.mod.new)$df+2, ret[3:4]) else
         
         if(length(ret) != 5 & any(class(basis.mod.new) %in% c("rq"))) 
           
