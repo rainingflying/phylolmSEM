@@ -22,7 +22,7 @@ sem.aic = function(
   )
     
   # Calculate likelihood degrees of freedom  
-  K = do.call(sum, lapply(modelList, function(i) attr(logLik(i), "df")))
+  K = do.call(sum, lapply(modelList, function(i) logLik(i)[[2]]-2))
   
   # Calculate AIC
   AIC = unname(fisher.c[1] + 2 * K)
