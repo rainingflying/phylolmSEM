@@ -8,9 +8,7 @@ Version: 0.0.1 (2023-07-22)
 
 Author: wuchao Gao <sichuangwc@gmail.com>
 
-Supported model classes include: 
-
-  `lm`, `glm`, `rq`, `glm.nb`, `gls`, `phylolm`, `merMod`, `merModLmerTest`, `lme`, `glmmPQL`, `glmmadmb`, and `glmmTMB`.
+Supported model classes are `phylolm`(PGLS: Phylogenetic Generalised Least Squares）
   
 ###WARNING
 
